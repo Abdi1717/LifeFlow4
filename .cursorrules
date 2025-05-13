@@ -1,0 +1,391 @@
+```markdown
+# ⌨️ Abdinajib's Agentic Dev Workflow & UI Rules
+
+These rules define how Cline and other AI agents should assist in building and maintaining projects, ensuring consistency, reusability, accessibility, and adherence to high-quality UI/UX standards. This workflow leverages Taskmaster MCP, Context7 MCP, GitHub MCP, and prioritizes ShadCN UI. The target repository for GitHub MCP is `https://github.com/Abdi1717/LifeFlow4.git`.
+
+---
+
+## 👑 Core Principles
+
+1.  **Default Stack:** **Next.js (App Router) + Tailwind CSS + ShadCN UI**. All development aligns with this stack unless a deviation is explicitly justified and approved.
+2.  **Agent-Driven Development:** Utilize Cline, Taskmaster MCP, Context7 MCP, and GitHub MCP for task breakdown, execution, context management, documentation, and version control. Human oversight is for approval and complex decision-making.
+3.  **Reuse Before Rebuilding:** Always check for existing components or utilities before creating new ones. Context7 MCP and `ShadCN-context.md` are the primary resources for this check.
+4.  **Wrap or Extend, Never Modify Core:** Prefer creating wrappers or extending components (both ShadCN and approved fallbacks) via composition over modifying their core library code. Store wrappers appropriately (e.g., `@/components/custom` for ShadCN extensions, `@/components/external-wrappers` for third-party components). This isolates dependencies and simplifies upgrades.
+5.  **Atomic & Documented Commits:** Each task set, as defined by Taskmaster MCP, should result in an atomic push by GitHub MCP with clear, contextual commit messages that explain the "what" and "why."
+6.  **Modularity & Separation of Concerns:** Design components and logic to be modular (small, focused, and reusable) and maintain a clear separation of concerns (e.g., UI, state management, business logic).
+7.  **Accessibility First (a11y):** Design and build with accessibility as a primary requirement, ensuring WCAG AA compliance as a minimum target.
+8.  **Context is King:** Cline and Context7 MCP must maintain and utilize up-to-date project context, including file structures, component usage, prop contracts, design decisions, and the rationale behind them.
+9.  **Performance Aware:** While building features, agents should be mindful of potential performance implications (bundle size, rendering speed) and opt for efficient solutions.
+10. **Testable Code:** Components and utilities should be structured in a way that facilitates unit and integration testing (though automated test generation might be a separate, advanced task).
+
+---
+
+## 🔧 1. System Tools & AI Agents
+
+### 🧠 Cline (AI Assistant)
+-   **Primary Executor:** Uses CLI and Editor access to complete tasks with human approval checkpoints, meticulously following subtasks from Taskmaster MCP.
+-   **Code Implementation:** Writes JSX, TypeScript, Tailwind CSS. Implements component wrappers, applies styling, integrates components, and connects to data sources or state.
+-   **File System Operations:** Manages file creation, deletion, and modification as per task requirements.
+-   **Memory & Learning:** Remembers file changes, task completions, component integrations (including wrappers for external components), styling patterns, and edits across the project. This memory is used to improve consistency and efficiency over time.
+-   **Action Logging:** Records and syncs all actions taken during a task loop, which are then used by GitHub MCP for commit messages and by Context7 MCP for updating its knowledge base.
+
+### 📋 Taskmaster MCP
+-   **Task Orchestrator:** Breaks down every user request or large development goal into a detailed, ordered sequence of actionable subtasks for Cline.
+-   **Dependency Management:** Understands dependencies between subtasks (e.g., research must precede implementation).
+-   **Progress Tracking & Confirmation:** Tracks subtask completion and confirms them one-by-one until the entire task set is finished. Handles error reporting and suggests retries or alternative approaches if Cline encounters issues.
+-   **Scope Definition:** Ensures that integrating new components (ShadCN or fallbacks) is treated as a distinct set of subtasks: research (Context7), decision (human/Context7), install/copy (Cline), wrap (Cline), style (Cline), document (Context7/Cline), integrate (Cline), and test (manual or future automated).
+
+### 🗃️ Context7 MCP
+-   **Knowledge & Research Agent:**
+    -   Identifies suitable ShadCN components for a given need.
+    -   If ShadCN is insufficient, researches and evaluates components from approved fallback libraries, considering features, accessibility, maintenance, and bundle size.
+    -   Provides rationale for component choices.
+-   **Documentation Custodian:**
+    -   Keeps all system files, architectural diagrams, component documentation, and overall project knowledge up to date.
+    -   **Crucially responsible for creating and meticulously updating `ShadCN-context.md` (and any other local UI documentation files like READMEs within component directories) with every new component integration (ShadCN or fallback).** This includes source, wrapper path, reason for use, key props of the wrapper, and any notable integration details.
+-   **Global Memory:** Maintains a global, structured memory of all ShadCN components and approved fallback components used in the project, including their wrapper locations, prop contracts, common usage patterns, and known limitations or best practices.
+-   **Consistency Guardian:** Helps ensure new components and patterns align with existing project conventions.
+
+### ⬆️ GitHub MCP
+-   **Version Control Automation:** Automatically commits completed task sets (as defined by Taskmaster MCP) with informative, well-formatted commit messages.
+-   **Commit Message Generation:** Uses information from Taskmaster MCP (task description) and Cline (actions taken, files changed) to generate meaningful commit messages (e.g., following conventional commit standards if specified).
+-   **Repository Synchronization:** Syncs Cline’s memory snapshots (or relevant summaries) with commit details and task breakdowns, potentially as commit notes or separate logs.
+-   **Atomic Pushes:** Uses atomic pushes per task set to the designated repository: `https://github.com/Abdi1717/LifeFlow4.git`. Ensures the main branch remains stable.
+
+---
+
+## 🏗️ 2. File & Project Structure
+
+-   **File Naming:** Use **kebab-case** for all file and directory names (e.g., `user-profile-card.tsx`, `utility-helpers.ts`, `auth-services`).
+-   **Component Grouping & Directory Structure:**
+    -   `@/app/`: Next.js App Router pages, layouts, loading states, error handlers.
+    -   `@/components/ui/`: Raw ShadCN UI components (installed via CLI, **never manually modified here**).
+    -   `@/components/custom/`: Custom reusable components built by composing ShadCN primitives, or wrappers around ShadCN components to provide specific behaviors or default styling. (e.g., `AppLogo.tsx`, `StyledButton.tsx` if it wraps `Button` with project-specific variants).
+    -   `@/components/external-wrappers/`: Wrappers for components from approved fallback libraries. Each wrapped external component should reside in its own subdirectory named after the library and component.
+        -   e.g., `@/components/external-wrappers/flowbite-datepicker/FlowbiteDatepickerWrapper.tsx`
+        -   e.g., `@/components/external-wrappers/headlessui-modal/CustomModalWrapper.tsx`
+    -   `@/components/features/`: Components specific to a particular feature or domain of the application. These might use components from `ui`, `custom`, or `external-wrappers`.
+        -   e.g., `@/components/features/user-profile/UserProfileForm.tsx`
+        -   e.g., `@/components/features/dashboard/AnalyticsChart.tsx`
+    -   `@/components/layouts/`: Reusable layout components (e.g., `DashboardLayout.tsx`, `PublicPageLayout.tsx`).
+    -   `@/hooks/`: Custom React hooks (e.g., `useAuth.ts`, `useScreenSize.ts`).
+    -   `@/lib/`: Utility functions, helper scripts, API client configurations, constants.
+        -   `@/lib/utils.ts`: General utility functions (like ShadCN's `cn`).
+        -   `@/lib/api.ts`: API client setup.
+        -   `@/lib/constants.ts`: Project-wide constants.
+    -   `@/styles/`: Global styles (`globals.css`) and Tailwind configuration (`tailwind.config.ts`).
+    -   `@/public/`: Static assets (images, fonts not handled by Next/font, etc.).
+    -   `@/docs/`: Project documentation, including `ShadCN-context.md` and potentially architectural diagrams.
+-   **Component Definition (Tooling Specific):** When generating files with AI tooling that supports it, define components using `tsx file="path/to/your-component.tsx"` on the same line as the opening backticks.
+-   **Scope Edits:** Only edit or generate relevant files. Cline must identify the minimal set of files to change for any given task, avoiding unnecessary rewrites.
+
+---
+
+## 🎨 3. Styling & Component Libraries
+
+### Primary: ShadCN UI
+-   Use **[ShadCN UI](https://ui.shadcn.com)** as the **default and primary** component library. All UI elements should first be considered for implementation using ShadCN.
+-   Installation of new ShadCN components via CLI (`npx shadcn-ui@latest add ...`) is a task for Cline, guided by Taskmaster MCP.
+-   Import all core components from `@/components/ui`.
+-   **Never modify core ShadCN components directly in `@/components/ui`.**
+    -   Instead, if specific adaptations, default props, or extended functionalities are needed, **create wrappers** in `@/components/custom` or your feature directories.
+    -   **Extend using composition** by building new, more complex components that utilize ShadCN primitives as their building blocks.
+-   **`ShadCN-context.md` Maintenance for ShadCN:**
+    -   Context7 MCP (or Cline if instructed by Taskmaster) **MUST** update `ShadCN-context.md` after any ShadCN component is added.
+    -   The entry should list the component name (e.g., `Button`, `AlertDialog`), its import path, and a brief note on its typical use case or specific configurations applied in this project.
+    -   Cline/Context7 MCP must reference this file *before* installing a new ShadCN component to avoid duplication and ensure awareness of existing elements.
+
+### Styling Engine: Tailwind CSS
+-   **Tailwind CSS is mandatory** for all styling. No other CSS methodologies (CSS-in-JS, Styled Components, plain CSS files for components) should be used unless for a very specific, justified third-party integration that cannot be avoided.
+-   Employ **utility-first, responsive, and composable styles**.
+-   Strive for consistency in spacing, typography, and color usage by adhering to the `tailwind.config.ts` definitions and existing project patterns. Cline should learn and replicate these patterns.
+
+### Color Palette & Backgrounds
+-   **Adhere strictly to the color palette defined in `tailwind.config.ts`.**
+-   **Avoid using indigo or blue colors** unless they are explicitly defined as brand colors in `tailwind.config.ts` or are requested for a specific, brand-aligned UI element (e.g., primary action buttons). Context7 MCP can verify brand alignment.
+-   If a background color other than the default theme background (typically white or a dark gray) is needed for a section or component, **use a wrapper element** with an appropriate Tailwind background class from the configured palette (e.g., `bg-slate-50`, `dark:bg-slate-800`, `bg-brand-light`). Do not apply broad background colors directly to `body` or `html` in `globals.css` without strong justification and documentation.
+
+### 🧩 Fallback Component Libraries (When ShadCN Doesn’t Cover Needs)
+
+If a component or functionality is not available in ShadCN and cannot be reasonably built from ShadCN primitives:
+
+1.  **Evaluate Need (Context7 MCP & Cline):** Confirm that a custom build is not feasible or efficient. Document this decision.
+2.  **Search Approved Libraries (Context7 MCP):** Context7 MCP searches and evaluates components from the **Approved Tailwind Component Libraries** list below. The choice should be justified based on features, accessibility, maintenance, bundle size, and ease of integration with Tailwind.
+3.  **Minimal Import/Copy (Cline):** Cline imports only the necessary component(s) or primitives. If it's a copy-paste library like HyperUI, Cline copies only the minimal required HTML/JS structure. Avoid importing entire libraries for single components.
+4.  **Wrap & Adapt (Cline):**
+    -   **Create a dedicated wrapper component** for the external component within `@/components/external-wrappers/library-name-component-name/`. For example, a carousel from Flowbite might be wrapped in `@/components/external-wrappers/flowbite-carousel/FlowbiteCarouselWrapper.tsx`.
+    -   This wrapper **MUST** adapt the external component to the project's styling and prop conventions. It should expose a clean API (props) to the rest of the application.
+    -   The wrapper acts as an **abstraction layer and anti-corruption layer**, making it easier to replace or upgrade the external component later with minimal changes to the consuming application code.
+    -   **Do not directly modify the imported/copied code of the external component.** All customizations, prop mappings, and event handling adaptations should happen within or around the wrapper.
+5.  **Style with Tailwind (Cline):** Ensure the wrapped component aligns with the project's overall design language using Tailwind utility classes applied *within the wrapper* or passed as props that the wrapper translates. Avoid directly copying large, opaque styling blobs from the source library; instead, reconstruct the appearance with the project's Tailwind strategy.
+6.  **Track Usage (Context7 MCP):** Context7 MCP meticulously documents the usage in `@/docs/ShadCN-context.md` under a "Fallback Components" section.
+
+#### ✅ Approved Tailwind Component Libraries
+
+| Library             | Highlights                                                                 | Notes for Agentic Use                                                                                                |
+|---------------------|----------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| **Headless UI**      | (Strongly Preferred for primitives) Accessible, unstyled primitives by Tailwind Labs for React and Vue. | Ideal for building fully custom, styled components. Cline will wrap these primitives to create project-specific components. |
+| **Flowbite**         | Hundreds of ready-to-use components. Supports Vanilla JS, React, etc.      | Use React version if available. Focus on individual components. Wrap thoroughly. Be mindful of JS dependencies.      |
+| **HyperUI**          | Fully open-source. Easy copy-paste and customization.                      | Good for simple structures. Cline copies HTML and adapts classes. Ensure accessibility is added if not present.       |
+| **DaisyUI**          | Plugin-based. Theming support. Great for rapid prototyping.                | Use with caution due to its own theming system. Prefer if a component provides significant value not easily replicated. Ensure Tailwind utilities can override/coexist. |
+| **Tailwind Elements**| 500+ components with JS functionality. Good for forms and templates.       | Similar to Flowbite. Check for React versions. Wrap carefully and manage JS.                                       |
+| **Meraki UI**        | 100+ minimal components for common UI needs.                               | Good for clean, simple components. Cline copies HTML, adapts classes.                                               |
+| **TailGrids**        | Over 200 components for HTML, React, and Vue.                              | Evaluate on a case-by-case basis. Prefer React components. Wrap and style.                                          |
+| **FlyonUI**          | Offers full templates, plugins, and component sets.                        | Less likely to be used for individual components; more for larger structures if ever needed. High scrutiny required.   |
+
+#### 📥 Integration Strategy for Fallbacks (Recap for Agents)
+-   **Cline, guided by Taskmaster MCP and researched by Context7 MCP, executes this strategy.**
+-   Choose the component that best fits the need with minimal overhead and maximal alignment with project standards.
+-   **Prioritize libraries like Headless UI** for unstyled primitives, allowing full control with the project's Tailwind strategy within the wrapper.
+-   The wrapper component in `@/components/external-wrappers/` is non-negotiable. It adapts class names, structure, and props to fit the project's system and ensures a consistent developer experience.
+-   **Context7 MCP updates `@/docs/ShadCN-context.md` with full details:**
+    -   Canonical Name (e.g., "Project Date Picker")
+    -   Source Library & URL (e.g., "Flowbite - Datepicker - https://flowbite.com/docs/plugins/datepicker/")
+    -   Reason for Use (e.g., "ShadCN lacks a native date range picker. Flowbite offers a suitable, accessible option.")
+    -   Wrapper Component Path (e.g., `@/components/external-wrappers/flowbite-datepicker/FlowbiteDatepickerWrapper.tsx`)
+    -   Key Props Exposed by Wrapper (e.g., `value: DateRange | undefined`, `onChange: (value: DateRange) => void`, `disabled?: boolean`)
+    -   Notes on Styling/Integration (e.g., "Wrapper re-styles calendar popover using project's Tailwind theme. Uses `react-day-picker` internally via Flowbite.")
+
+---
+
+## ♿ 4. Accessibility (a11y)
+
+-   Use **semantic HTML** (`<main>`, `<nav>`, `<article>`, `<aside>`, `<section>`, `<footer>`, `<header>`, `<button>`, `<a>` with `href`, etc.) correctly.
+-   Always include:
+    -   Appropriate **ARIA roles** (e.g., `role="dialog"`, `aria-labelledby`, `aria-describedby`, `aria-live`, `aria-busy`) where semantic HTML doesn't suffice or to enhance clarity for assistive technologies.
+    -   `alt` attributes for all `<img>` tags. Provide descriptive text for informative images, or `alt=""` for purely decorative images.
+    -   `sr-only` (or equivalent Tailwind class like `sr-only`) spans for text that should only be available to screen readers (e.g., for icon buttons).
+    -   Programmatic labels for all form controls (`<label htmlFor="...">`, `aria-label`, `aria-labelledby`).
+-   Ensure **every interactive element** (buttons, links, form inputs, custom controls like sliders or tabs) is:
+    -   Fully **keyboard accessible**: focusable using Tab, operable using Enter/Space/Arrow keys as appropriate to their role.
+    -   Clearly indicated with visible **focus states** (Tailwind's `focus-visible` utilities are preferred over generic `focus` for non-keyboard users).
+    -   Provides adequate **color contrast** between text and background (aim for WCAG AA minimums).
+-   Accessibility considerations apply equally to ShadCN components, custom components, and wrapped external components. Cline must ensure wrappers maintain or enhance the accessibility of the underlying component. If an external component has a11y issues, this must be noted by Context7 MCP, and a decision made whether to fix it in the wrapper or find an alternative.
+-   Cline should use tools (e.g., linters with a11y plugins, browser extensions) during development if possible, and human review should include a11y checks.
+
+---
+
+## 🖼️ 5. Assets & Placeholders
+
+-   **Placeholders:** Use SVG placeholders for development, configurable via query parameters: `/placeholder.svg?height=200&width=300&text=User+Avatar&bgColor=e0e0e0&textColor=333`.
+-   **Asset Referencing & Storage:**
+    -   Store static assets like images, custom fonts (if not using `next/font`), and icons in the `/public` directory, organized into subdirectories (e.g., `/public/images/logos/`, `/public/icons/`).
+    -   **Always reference assets using root-relative paths** in JSX and CSS (e.g., `<img src="/images/logos/logo.svg" alt="Company Logo" />`, `background-image: url('/images/backgrounds/hero.jpg')`).
+    -   **Never use blob URLs directly in committed JSX or CSS code.** Blob URLs are temporary and not suitable for persistent references.
+    -   For SVGs used as components, prefer importing them as React components (e.g., using SVGR, often configured by default in Next.js). Store these SVGs in a relevant component directory, e.g., `@/components/icons/CloseIcon.tsx`.
+-   **AI Asset Embedding (Tooling Specific):** For AI-generated previews or when explicitly instructed by the workflow:
+    ```md
+    ```png file="public/images/generated/ai-feature-mockup.png" url="https://some-ai-blob-source.com/image.png" prompt="A mockup of the new dashboard widget showing a bar chart and a summary card."```
+    ```
+    (Cline is responsible for downloading the asset from `url`, saving it to the specified `file` path, and ensuring the `prompt` or description is available for context or alt text generation.)
+
+---
+
+## ⚙️ 6. Environment & Configuration
+
+-   **Tailwind Configuration (`tailwind.config.ts`):**
+    -   Hardcode all colors, fonts, spacing units, breakpoints, and other theme extensions directly in `tailwind.config.ts`. This file is the single source of truth for the design system's primitives.
+    -   Avoid adding extensive global styles in `globals.css`. Use it *only* for:
+        -   `@tailwind base; @tailwind components; @tailwind utilities;` directives.
+        -   Base HTML element styling if absolutely necessary (e.g., default `body` font, text color, background color if not handled by a layout component).
+        -   Defining global CSS variables if needed for interoperability with JS or non-Tailwind parts (rare).
+-   **Environment Variables:**
+    -   **Do not commit `.env` files** (except possibly `.env.example` which should contain no secrets). Add `.env*` (except `.env.example` and `.env.ci` if used) to `.gitignore`.
+    -   Manage environment variables through your deployment platform (e.g., Vercel Dashboard, Netlify UI) for production, staging, and preview environments.
+    -   For local development, developers should use `.env.local` (which is in `.gitignore` by default in Next.js).
+    -   All frontend-accessible environment variables **must be prefixed with `NEXT_PUBLIC_`**. Variables without this prefix are server-side only.
+    -   Type-check environment variables (e.g., using Zod or a similar library, potentially in a `env.mjs` or `env.ts` file) to ensure required variables are present and correctly formatted at build time.
+
+---
+
+## 🧪 7. TypeScript + JSX Best Practices
+
+-   **Type Imports:** Use `import type { ... } from '...'` when importing only types. This ensures types are stripped at build time and do not contribute to runtime bloat.
+-   **Props Typing:**
+    -   Define explicit types or interfaces for all component props.
+    -   All components, including wrappers, should aim to provide sensible **default props** for optional properties to ensure reliability and predictable rendering.
+    -   Use descriptive prop names.
+-   **Strict Typing:**
+    -   Enable `strict: true` in `tsconfig.json`.
+    -   Avoid `any` wherever possible. Use `unknown` for values of unknown type and then perform type checking/narrowing. Use specific types like `Record<string, unknown>` or utility types like `Partial<T>`, `Readonly<T>` etc.
+-   **JSX Readability:**
+    -   Escape JSX string literals containing special characters (`<`, `>`, `{`, `}`) with `{''}` when necessary, e.g., `<div>{'<Hello World>'}</div>` to render `<Hello World>` literally.
+    -   Format JSX for readability, often with props on new lines for components with many attributes.
+    -   Use conditional rendering patterns clearly (e.g., `condition && <Component />`, `condition ? <A /> : <B />`).
+-   **Function Components:** Prefer function components with hooks over class components.
+-   **Error Handling:** Implement basic error boundaries for major sections of the UI.
+-   **Code Comments:** Use JSDoc for components and public functions. Use inline comments (`//`) for clarifying complex logic. Comments should explain *why*, not *what* (the code itself shows what).
+
+---
+
+## 🤖 8. AI SDK Usage (if applicable)
+
+-   **Approved SDKs:** Use only the Vercel AI SDK: `ai` and provider-specific packages like `@ai-sdk/openai`, `@ai-sdk/anthropic`, etc.
+-   **Core APIs:** Utilize `generateText()` or `streamText()` APIs for Language Model interactions. For more complex scenarios, `generateObject()` or other structured output methods can be used.
+-   **Runtime Considerations:**
+    -   **Do not use `runtime = 'edge'` for any AI-related API routes if they involve complex pre/post-processing, large dependencies not suited for edge functions, or require long-running operations.**
+    -   Prioritize robust, standard Node.js runtime for AI backend logic unless the specific operation is lightweight, stateless, and explicitly benefits from edge deployment (e.g., simple text streaming with minimal processing). Context7 MCP can help evaluate this.
+-   **API Key Management:** Securely manage AI provider API keys using environment variables (server-side only, never `NEXT_PUBLIC_`).
+-   **Streaming:** Prefer `streamText()` for user-facing interactions to improve perceived performance.
+
+---
+
+## 🔁 9. Workflow & Code Management
+
+-   **Planning with `<Thinking>`:** Before Cline starts coding or making file changes for a `<CodeProject>`, it must use a `<Thinking>` block. This block, informed by Taskmaster MCP's subtasks, should outline:
+    -   The specific files to be created or modified.
+    -   The components to be used, created, or wrapped.
+    -   The props and state involved.
+    -   Potential challenges or edge cases considered.
+    -   How Context7 MCP's research will be applied.
+-   **Explicit File Operations:**
+    -   File changes by Cline must be explicit and use the designated tags: `<CreateFile path="..."/>`, `<DeleteFile path="..."/>`, `<MoveFile from="..." to="..."/>`.
+    -   Inline diffs within `<CodeFile>` or similar tags must clearly show additions, deletions, and modifications using standard diff syntax.
+-   **Sync & Commit (GitHub MCP):**
+    -   GitHub MCP commits completed task sets (as defined by Taskmaster MCP) to `https://github.com/Abdi1717/LifeFlow4.git`.
+    -   Commit messages must be informative, ideally following Conventional Commits format (e.g., `feat: add user login form with email/password`, `fix: correct responsive layout on profile page`, `docs: update ShadCN-context.md with new Avatar component`). GitHub MCP generates these based on Cline's actions and Taskmaster's task descriptions.
+    -   Cline’s memory snapshots, including details of new components, wrappers, `ShadCN-context.md` updates, and rationale from Context7 MCP, are associated with each push cycle (either in extended commit messages, PR descriptions if applicable, or internal logs).
+-   **Branching Strategy (if applicable):** If a branching strategy is in use (e.g., feature branches), GitHub MCP should create/push to the appropriate branch and potentially open a Pull Request. For now, assume direct pushes to a main development branch unless specified otherwise.
+-   **Human Review Checkpoints:** Taskmaster MCP should define logical checkpoints where human review and approval are required before proceeding, especially for significant architectural decisions, new external dependencies, or complex UI implementations.
+
+---
+
+## 📚 10. Documentation
+
+### `docs/ShadCN-context.md` (Managed by Context7 MCP)
+This is the **central UI component inventory and decision log**. It **MUST** be updated by Context7 MCP every time a ShadCN component is newly used or a fallback component (and its wrapper) is integrated. It serves as a quick reference for all developers (human and AI) on available UI building blocks.
+
+**Example Structure for `docs/ShadCN-context.md`:**
+
+```markdown
+# Project UI Component Inventory (ShadCN & Fallbacks)
+
+**Last Updated:** {{YYYY-MM-DD}} by Context7 MCP
+
+This document tracks all significant UI components used in the project.
+It is maintained by Context7 MCP and serves as a reference for Cline and human developers.
+
+## Guiding Principles for Component Choice
+- Prioritize ShadCN UI components.
+- If ShadCN is insufficient, select from Approved Fallback Libraries, preferring unstyled primitives (like Headless UI) to build custom solutions.
+- All external components MUST be wrapped.
+- All component choices and wrapper implementations MUST prioritize accessibility and performance.
+
+## ShadCN UI Components Used
+
+### Accordion (`@/components/ui/accordion`)
+- **Status:** In Use
+- **Typical Usage:** Displaying collapsible content sections, e.g., FAQs, settings panels.
+- **Project-Specific Notes:** Standard implementation. Ensure `type="single" collapsible` is used for typical accordion behavior.
+
+### Button (`@/components/ui/button`)
+- **Status:** In Use
+- **Typical Usage:** Standard actions, navigation triggers, form submissions.
+- **Project-Specific Notes:** Default variant used for primary actions. `variant="outline"` for secondary. `variant="ghost"` for tertiary/icon buttons. `size="sm"` common for table actions.
+  - See `@/components/custom/SubmitButton.tsx` for a wrapper that adds loading state.
+
+### Card (`@/components/ui/card`)
+- **Status:** In Use
+- **Typical Usage:** Content containers for distinct pieces of information.
+- **Project-Specific Notes:** Used extensively in dashboard layouts. `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter` are all utilized.
+
+<!-- ... more ShadCN components, alphabetically sorted ... -->
+
+## Fallback Components (Wrapped)
+
+### 1. Project Date Range Picker (using Flowbite Datepicker)
+- **Wrapper Path:** `@/components/external-wrappers/flowbite-datepicker/DateRangePickerWrapper.tsx`
+- **Source Library:** Flowbite React - Datepicker (https://www.flowbite-react.com/docs/components/datepicker)
+- **Reason for Use:** ShadCN UI currently lacks a native, feature-rich date range picker. Flowbite's React Datepicker provides the necessary range selection, accessibility, and customization options.
+- **Key Exposed Props by Wrapper:**
+  - `value?: { from?: Date; to?: Date }`
+  - `onValueChange: (range: { from?: Date; to?: Date }) => void`
+  - `disabled?: boolean`
+  - `minDate?: Date`
+  - `maxDate?: Date`
+- **Styling:** Wrapper applies Tailwind classes to align popover and inputs with project theme. Overrides default Flowbite theme where necessary.
+- **Accessibility:** Leverages Flowbite's built-in accessibility. Wrapper ensures `aria-label`s are correctly applied.
+- **Date Installed/Updated:** {{YYYY-MM-DD}}
+
+### 2. FAQ Accordion Item (using Headless UI Disclosure)
+- **Wrapper Path:** `@/components/custom/FaqAccordionItem.tsx` (This is considered custom as it heavily styles a primitive)
+- **Source Library:** Headless UI - Disclosure (https://headlessui.com/react/disclosure)
+- **Reason for Use:** Required a highly customizable and accessible accordion primitive for the FAQ section. ShadCN's Accordion was suitable but this implementation needed specific open/close icon animations not easily achieved with the standard ShadCN component at the time.
+- **Key Exposed Props by Wrapper:**
+  - `question: string | React.ReactNode`
+  - `answer: string | React.ReactNode`
+  - `defaultOpen?: boolean`
+- **Styling:** Fully styled with Tailwind CSS, including transition effects for open/close state.
+- **Accessibility:** Headless UI primitives are designed for accessibility. Wrapper ensures proper ARIA attributes are maintained.
+- **Date Installed/Updated:** {{YYYY-MM-DD}}
+
+<!-- ... more fallback components, numerically ordered and detailed ... -->
+```
+
+### JSDoc (Generated/Maintained by Cline)
+-   Cline **MUST** add JSDoc comments for all newly created or significantly modified custom components, wrappers, hooks, and utility functions.
+-   JSDoc should explain:
+    -   The component's/function's purpose.
+    -   `@param` for each prop/argument, its type, and a description.
+    -   `@returns` for functions/hooks, its type, and what it returns.
+    -   Basic usage examples if helpful.
+    ```typescript jsx
+    /**
+     * DateRangePickerWrapper provides a themed and project-consistent date range picker
+     * experience, abstracting the underlying Flowbite Datepicker component.
+     *
+     * @param {object} props - The component's props.
+     * @param {object} [props.value] - The currently selected date range.
+     * @param {Date} [props.value.from] - The start of the range.
+     * @param {Date} [props.value.to] - The end of the range.
+     * @param {(range: { from?: Date; to?: Date }) => void} props.onValueChange - Callback triggered when the date range changes.
+     * @param {boolean} [props.disabled=false] - If true, the picker is disabled.
+     * @param {Date} [props.minDate] - The earliest selectable date.
+     * @param {Date} [props.maxDate] - The latest selectable date.
+     * @returns {JSX.Element} The rendered date range picker component.
+     */
+    export function DateRangePickerWrapper({
+      value,
+      onValueChange,
+      disabled = false,
+      minDate,
+      maxDate,
+    }: DateRangePickerWrapperProps): JSX.Element {
+      // ... wrapper logic using Flowbite Datepicker
+    }
+    ```
+
+### READMEs (Generated/Maintained by Cline/Context7 MCP)
+-   Use `README.md` files for:
+    -   **Component Group Directories:** e.g., in `@/components/features/user-authentication/README.md` to explain the set of components related to auth (LoginForm, SignupForm, ForgotPasswordModal) and how they interact.
+    -   **Complex Wrapper Directories:** e.g., in `@/components/external-wrappers/some-complex-widget/README.md` if the wrapper itself is complex or has notable setup/usage instructions.
+    -   **Main Project README:** The root `README.md` should provide an overview of the project, setup instructions, and links to key documentation like these rules.
+-   READMEs should be concise and provide practical information.
+
+### System Logic & Flows (Mermaid Diagrams - Generated by Cline/Context7 MCP)
+-   For documenting system logic, user flows, agent interaction protocols, or complex component interactions, Cline or Context7 MCP can generate Mermaid diagrams within Markdown files (e.g., in a `/docs/diagrams` directory or embedded in relevant READMEs).
+    ```mermaid
+    graph TD;
+        subgraph User Authentication Flow
+            A[User visits /login] --> B{Auth Check};
+            B -- Logged In --> C[Redirect to /dashboard];
+            B -- Not Logged In --> D(Cline: Renders LoginForm component);
+            D -- User Submits Credentials --> E(API: /api/auth/login);
+            E -- Success --> F[Set Auth Cookie/Token];
+            F --> C;
+            E -- Failure --> G(LoginForm: Display Error Message);
+        end
+
+        subgraph Agent Task: Add New ShadCN Component
+            H[Dev Request: "Add ShadCN DataTable"] --> I(TaskmasterMCP: Create Subtasks);
+            I --> J(Context7MCP: Verify DataTable not in ShadCN-context.md);
+            J --> K(Cline: Run `npx shadcn-ui add datatable`);
+            K --> L(Context7MCP: Update ShadCN-context.md with DataTable details);
+            L --> M(Cline: Implement DataTable on /users page);
+            M --> N(GitHubMCP: Commit & Push "feat: integrate ShadCN DataTable for user list");
+        end
+    ```
+
+---
+
+```

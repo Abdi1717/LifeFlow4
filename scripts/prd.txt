@@ -1,0 +1,212 @@
+<context>
+# Overview  
+LifeFlow is a modern, elegant, and intelligent web application designed to help users manage their personal life with clarity, precision, and peace of mind. It serves as a comprehensive life dashboard to visualize finances, track notes, understand self-growth, and stay ahead of daily routines using real-time data and a delightful UI.
+
+# Core Features  
+1. Finance Dashboard
+   - Graph-Based Spending & Income Visualizer
+   - Budget Goals with visual tracking
+   - Bank Statement Importer (CSV/API)
+   - Spending Category & Vendor Overview
+   - Smart Notifications for financial events
+   - Payments & Irregular Expense Tracker
+
+2. Notes & Journaling Hub
+   - Markdown or rich text editor
+   - Tagging system (manual + automatic)
+   - Sentiment-aware journaling
+   - Daily/weekly prompt system
+   - Journal streak tracker
+   - Export options
+
+3. Personal Radar (Self-Growth Visualizer)
+   - Customizable trait input
+   - Manual + AI-enhanced tracking
+   - Weekly/Monthly self-check-in
+   - Timeline view to observe growth
+
+4. Commute Widget (SEPTA Integration)
+   - Real-time train data
+   - Auto-detection of most-used route
+   - "Leave now" alerts
+   - Daily weather overlay
+   - Twitter feed integration for SEPTA updates
+
+# User Experience  
+LifeFlow targets users who want to maintain organization in their personal life through a single unified dashboard. The interface will be clean, card-based, and highly visual, with responsive design for all devices. Dark/light mode toggle will be available, and the UI will feature smooth transitions.
+</context>
+<PRD>
+# Technical Architecture  
+## Tech Stack
+- Frontend: Next.js 14 (App Router)
+- UI Components: ShadCN/UI
+- Styling: Tailwind CSS
+- Charts/Visualization: Recharts
+- Data Storage: LocalStorage (MVP), with optional Supabase integration
+- Optional Integrations: Plaid API, SEPTA API, Weather API
+
+## System Components
+1. Layout & Navigation
+   - Dashboard layout with sidebar navigation
+   - Responsive design for mobile and desktop
+   - Theme toggle (light/dark mode)
+   - Tab-based interface for main sections
+
+2. Finance Module
+   - Transaction parser/importer (CSV)
+   - Category classifier for transactions
+   - Visualization components (charts, graphs)
+   - Budget tracking system
+   - Recurring payments detector
+   - Financial alerts system
+
+3. Notes/Journal Module
+   - Rich text editor with markdown support
+   - Note organization system (tags, categories)
+   - Search functionality
+   - Streak tracking mechanism
+   - Export functionality
+
+4. Personal Radar Module
+   - Radar chart visualization
+   - Data entry forms for self-assessment
+   - Progress timeline view
+   - Trait customization interface
+
+5. Commute Widget
+   - SEPTA API integration
+   - Weather data integration
+   - Real-time alerts system
+   - Twitter feed parser for service updates
+
+## Data Models
+1. User Preferences
+   - Theme preferences
+   - Dashboard layout settings
+   - Default view settings
+
+2. Financial Data
+   - Transactions (date, amount, category, vendor, account)
+   - Budget categories and limits
+   - Recurring payments
+   - Financial goals
+
+3. Journal Entries
+   - Content (rich text)
+   - Date
+   - Tags
+   - Sentiment score
+
+4. Growth Radar
+   - Traits (customizable)
+   - Assessment scores
+   - Assessment dates
+   - Progress markers
+
+5. Commute Settings
+   - Preferred routes
+   - Home/work locations
+   - Notification preferences
+
+# Development Roadmap  
+## Phase 1: Core Infrastructure & Finance Dashboard (MVP)
+- Project setup with Next.js, TailwindCSS, and ShadCN
+- Basic layout and navigation structure
+- Theme switching functionality
+- Finance Dashboard MVP:
+  - CSV transaction importer
+  - Basic categorization of transactions
+  - Simple visualizations (pie chart, bar chart)
+  - Initial budget tracking
+
+## Phase 2: Enhanced Finance Features
+- Advanced finance visualizations (Sankey, line charts)
+- Budget goal setting and tracking
+- Smart detection of recurring payments
+- Financial alerts and notifications
+- Multi-account support
+
+## Phase 3: Notes & Journaling
+- Markdown/rich text editor implementation
+- Tagging system for notes
+- Journal entry calendar view
+- Streak tracking for journal entries
+- Basic export functionality
+
+## Phase 4: Personal Radar
+- Radar chart implementation for self-tracking
+- Trait customization interface
+- Weekly/monthly assessment forms
+- Timeline view for tracking progress
+
+## Phase 5: Commute Widget & Integrations
+- SEPTA API integration
+- Weather data integration
+- Real-time commute alerts
+- Twitter feed integration for service updates
+
+## Phase 6: Refinement & Advanced Features
+- Performance optimization
+- UI/UX improvements
+- Advanced data analysis
+- Optional cloud sync
+
+# Logical Dependency Chain
+1. Foundation Components:
+   - Project setup and configuration
+   - Base layout and navigation
+   - Theme system
+   - Component library setup (ShadCN)
+
+2. Finance Core:
+   - CSV parser for transactions
+   - Basic data visualization
+   - Simple budget tracking
+
+3. Enhanced Finance:
+   - Advanced visualizations
+   - Smart categorization
+   - Payment detection
+   - Alerts system
+
+4. Notes System:
+   - Text editor
+   - Note organization
+   - Tagging system
+
+5. Personal Growth:
+   - Radar chart implementation
+   - Self-assessment forms
+   - Progress tracking
+
+6. Commute Widget:
+   - API integrations
+   - Alert system
+   - Information display
+
+# Risks and Mitigations  
+## Technical Challenges
+- Risk: Complex data visualization requirements
+  Mitigation: Leverage established libraries (Recharts) and implement incrementally
+
+- Risk: Performance issues with large datasets
+  Mitigation: Implement pagination, filtering, and efficient data structures
+
+- Risk: API integration complexities
+  Mitigation: Build modular interfaces that can work with mock data initially
+
+## Resource Constraints
+- Risk: Limited development time
+  Mitigation: Prioritize core features for MVP, implement additional features incrementally
+
+- Risk: External API dependencies
+  Mitigation: Design system to gracefully handle API failures or limitations
+
+# Appendix  
+## Key User Stories
+1. "As a user, I want to upload my bank statement CSV and see my spending categorized automatically."
+2. "As a user, I want to set budget goals and get alerts when I'm approaching my limits."
+3. "As a user, I want to maintain a journal and see patterns in my mood over time."
+4. "As a user, I want to track my personal growth across different life areas."
+5. "As a user, I want to quickly see if my train is delayed without checking multiple apps."
+</PRD> 
