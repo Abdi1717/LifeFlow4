@@ -22,3 +22,8 @@ This file tracks all the ShadCN components that have been used in the project.
 - Scroll Area (ScrollArea)
 - Skeleton
 - Switch 
+- Calendar
+- Popover (Popover, PopoverTrigger, PopoverContent)
+- Badge 
+- Toast (Toast, ToastProvider, ToastViewport, Toaster, useToast)
+- Command (Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList) 

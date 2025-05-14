@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const removeImports = require('next-remove-imports')();
+const withBundleAnalyzer = process.env.ANALYZE === 'true' 
+  ? require('@next/bundle-analyzer')({ enabled: true })
+  : (config) => config;
 
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable in development for faster renders
   transpilePackages: ['lucide-react'],
   
   // Image optimization settings
@@ -30,18 +33,52 @@ const nextConfig = {
   // Bundle optimization
   swcMinify: true, // Use SWC minifier instead of Terser for faster builds
   
-  // Experimental features
+  // Experimental features - keeping only supported ones
   experimental: {
+    // JavaScript optimization
     esmExternals: 'loose',
-    optimizeCss: true, // CSS optimization for improved load time
-    optimizeServerReact: true, // React server-side optimization
+    
+    // Improved code splitting
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons', 'date-fns'],
+    
+    // Cache optimization
+    incrementalCacheHandlerPath: require.resolve('./lib/cache-handler.js'),
+    
+    // Turbopack settings - simplified
     turbo: {
       loaders: {
-        // Enable SWC optimization for .svg files
         '.svg': ['@svgr/webpack'],
       },
     },
   },
+  
+  // Enhanced compiler options
+  compiler: {
+    // Remove console logs in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
+  // Webpack optimization
+  webpack: (config, { dev, isServer }) => {
+    // Only include required locales from date-fns
+    config.resolve.alias['date-fns/locale'] = 'date-fns/locale/en-US';
+    
+    // Optimize for development speed
+    if (dev) {
+      // Use cached Babel loader in dev mode
+      config.module.rules.forEach((rule) => {
+        if (rule.use && rule.use.loader === 'next-babel-loader') {
+          rule.use.options.cacheDirectory = true;
+        }
+      });
+      
+      // Don't resolve symlinks in dev mode
+      config.resolve.symlinks = false;
+    }
+    
+    return config;
+  },
 }
 
-module.exports = removeImports(nextConfig) 
+// Apply optimizations and export
+module.exports = withBundleAnalyzer(removeImports(nextConfig)); 

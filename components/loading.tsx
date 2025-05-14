@@ -20,4 +20,6 @@ export function Loading({ size = 'md', text = 'Loading...' }: LoadingProps) {
       {text && <p className="mt-2 text-sm text-muted-foreground">{text}</p>}
     </div>
   )
-} 
+}
+
+export default Loading; 

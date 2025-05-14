@@ -2,14 +2,37 @@
 
 import { useState } from "react"
 import { v4 as uuidv4 } from "uuid"
-import { SpendingDashboard } from '@/components/spending-dashboard'
-import { CSVFileUploader } from '@/components/csv-file-uploader'
-import { TransactionList } from '@/components/transaction-list'
-import { BudgetDashboard } from '@/components/budget-dashboard'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { TransactionProvider, useTransactions, Transaction } from "@/lib/transaction-context"
+import { useTransactions, Transaction } from "@/lib/transaction-context"
 import { BarChart3, Wallet, Receipt, CreditCard } from "lucide-react"
+import { lazyImport } from "@/lib/utils"
+import { Suspense } from "react"
+import Loading from "@/components/loading"
+
+// Lazy load heavy components
+const SpendingDashboard = lazyImport(() => import('@/components/spending-dashboard').then(mod => ({ default: mod.SpendingDashboard })), {
+  displayName: 'SpendingDashboard',
+  ssr: false,
+  loading: <Loading text="Loading spending dashboard..." />
+})
+
+const CSVFileUploader = lazyImport(() => import('@/components/csv-file-uploader').then(mod => ({ default: mod.CSVFileUploader })), {
+  displayName: 'CSVFileUploader',
+  ssr: false,
+})
+
+const TransactionList = lazyImport(() => import('@/components/transaction-list').then(mod => ({ default: mod.TransactionList })), {
+  displayName: 'TransactionList',
+  ssr: false,
+  loading: <Loading text="Loading transactions..." />
+})
+
+const BudgetDashboard = lazyImport(() => import('@/components/budget-dashboard').then(mod => ({ default: mod.BudgetDashboard })), {
+  displayName: 'BudgetDashboard',
+  ssr: false,
+  loading: <Loading text="Loading budget dashboard..." />
+})
 
 function FinanceDashboardContent() {
   const { addTransactions, categories } = useTransactions()
@@ -135,7 +158,9 @@ function FinanceDashboardContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <SpendingDashboard />
+              <Suspense fallback={<Loading text="Loading spending dashboard..." />}>
+                <SpendingDashboard />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
@@ -151,7 +176,9 @@ function FinanceDashboardContent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <CSVFileUploader onFileLoad={handleFileLoad} />
+                  <Suspense fallback={<Loading text="Loading file uploader..." />}>
+                    <CSVFileUploader onFileLoad={handleFileLoad} />
+                  </Suspense>
                 </CardContent>
               </Card>
             </div>
@@ -167,7 +194,9 @@ function FinanceDashboardContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <TransactionList />
+                  <Suspense fallback={<Loading text="Loading transactions..." />}>
+                    <TransactionList />
+                  </Suspense>
                 </CardContent>
               </Card>
             </div>
@@ -188,7 +217,9 @@ function FinanceDashboardContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <BudgetDashboard />
+                  <Suspense fallback={<Loading text="Loading budget dashboard..." />}>
+                    <BudgetDashboard />
+                  </Suspense>
                 </CardContent>
               </Card>
             </div>
@@ -252,8 +283,8 @@ function FinanceDashboardContent() {
 
 export default function Dashboard() {
   return (
-    <TransactionProvider>
+    <div className="container mx-auto py-6">
       <FinanceDashboardContent />
-    </TransactionProvider>
+    </div>
   )
 } 

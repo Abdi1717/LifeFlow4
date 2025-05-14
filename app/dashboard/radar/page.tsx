@@ -4,16 +4,60 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle, Settings, TrendingUp, GitCompare, Target } from 'lucide-react';
-import { RadarProvider, useRadar } from '@/lib/contexts/radar-context';
-import { RadarChart } from '@/components/radar-chart';
-import { RadarEntryForm } from '@/components/radar-entry-form';
-import { RadarEntriesList } from '@/components/radar-entries-list';
-import { RadarAreasManager } from '@/components/radar-areas-manager';
-import { RadarEntryDetail } from '@/components/radar-entry-detail';
-import { RadarTimeline } from '@/components/radar-timeline';
-import { RadarComparison } from '@/components/radar-comparison';
-import { RadarGoalsManager } from '@/components/radar-goals-manager';
+import { useRadar } from '@/lib/contexts/radar-context';
 import { RadarEntry } from '@/lib/types';
+import { lazyImport } from '@/lib/utils';
+import { Suspense } from 'react';
+import Loading from '@/components/loading';
+
+// Lazy load the heavy components
+const RadarChart = lazyImport(() => import('@/components/radar-chart').then(mod => ({ default: mod.RadarChart })), {
+  displayName: 'RadarChart',
+  ssr: false,
+  loading: <Loading text="Rendering radar chart..." />
+});
+
+const RadarEntryForm = lazyImport(() => import('@/components/radar-entry-form').then(mod => ({ default: mod.RadarEntryForm })), {
+  displayName: 'RadarEntryForm',
+  ssr: false,
+  loading: <Loading text="Loading form..." />
+});
+
+const RadarEntriesList = lazyImport(() => import('@/components/radar-entries-list').then(mod => ({ default: mod.RadarEntriesList })), {
+  displayName: 'RadarEntriesList',
+  ssr: false,
+  loading: <Loading text="Loading entries..." />
+});
+
+const RadarAreasManager = lazyImport(() => import('@/components/radar-areas-manager').then(mod => ({ default: mod.RadarAreasManager })), {
+  displayName: 'RadarAreasManager',
+  ssr: false,
+  loading: <Loading text="Loading areas manager..." />
+});
+
+const RadarEntryDetail = lazyImport(() => import('@/components/radar-entry-detail').then(mod => ({ default: mod.RadarEntryDetail })), {
+  displayName: 'RadarEntryDetail',
+  ssr: false,
+  loading: <Loading text="Loading entry details..." />
+});
+
+const RadarTimeline = lazyImport(() => import('@/components/radar-timeline').then(mod => ({ default: mod.RadarTimeline })), {
+  displayName: 'RadarTimeline',
+  ssr: false,
+  loading: <Loading text="Loading timeline..." />
+});
+
+const RadarComparison = lazyImport(() => import('@/components/radar-comparison').then(mod => ({ default: mod.RadarComparison })), {
+  displayName: 'RadarComparison',
+  ssr: false,
+  loading: <Loading text="Loading comparison view..." />
+});
+
+const RadarGoalsManager = lazyImport(() => import('@/components/radar-goals-manager').then(mod => ({ default: mod.RadarGoalsManager })), {
+  displayName: 'RadarGoalsManager',
+  ssr: false,
+  loading: <Loading text="Loading goals manager..." />
+});
 
 function RadarContent() {
   const { getLatestEntry } = useRadar();
@@ -130,7 +174,9 @@ function RadarContent() {
         
         <TabsContent value="overview" className="mt-4 space-y-6">
           <div className="bg-muted/20 p-4 rounded-lg">
-            <RadarChart height={400} />
+            <Suspense fallback={<Loading text="Rendering radar chart..." />}>
+              <RadarChart height={400} />
+            </Suspense>
           </div>
           
           {latestEntry ? (
@@ -228,43 +274,58 @@ function RadarContent() {
         </TabsContent>
         
         <TabsContent value="entries" className="mt-4">
-          <RadarEntriesList 
-            onSelectEntry={handleViewEntry} 
-            onEditEntry={handleEditEntry} 
-          />
+          <Suspense fallback={<Loading text="Loading entries..." />}>
+            <RadarEntriesList 
+              onSelectEntry={handleViewEntry} 
+              onEditEntry={handleEditEntry} 
+            />
+          </Suspense>
         </TabsContent>
         
         <TabsContent value="timeline" className="mt-4">
-          <RadarTimeline height={500} />
+          <Suspense fallback={<Loading text="Loading timeline..." />}>
+            <RadarTimeline height={500} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="compare" className="mt-4">
-          <RadarComparison />
+          <Suspense fallback={<Loading text="Loading comparison view..." />}>
+            <RadarComparison />
+          </Suspense>
         </TabsContent>
         
         <TabsContent value="goals" className="mt-4">
-          <RadarGoalsManager />
+          <Suspense fallback={<Loading text="Loading goals manager..." />}>
+            <RadarGoalsManager />
+          </Suspense>
         </TabsContent>
         
         <TabsContent value="detail" className="mt-4">
           {selectedEntry && (
-            <RadarEntryDetail 
-              entry={selectedEntry} 
-              onEdit={() => handleEditEntry(selectedEntry)} 
-              onBack={handleBackToList} 
-            />
+            <Suspense fallback={<Loading text="Loading entry details..." />}>
+              <RadarEntryDetail 
+                entry={selectedEntry} 
+                onBack={handleBackToList}
+                onEdit={() => handleEditEntry(selectedEntry)}
+              />
+            </Suspense>
           )}
         </TabsContent>
         
         <TabsContent value="add" className="mt-4">
-          <RadarEntryForm 
-            initialEntry={isEditingEntry ? selectedEntry || undefined : undefined}
-            onSave={handleSaved}
-          />
+          <Suspense fallback={<Loading text="Loading form..." />}>
+            <RadarEntryForm 
+              onSaved={handleSaved}
+              existingEntry={isEditingEntry ? selectedEntry : undefined}
+              isEditing={isEditingEntry}
+            />
+          </Suspense>
         </TabsContent>
         
         <TabsContent value="areas" className="mt-4">
-          <RadarAreasManager />
+          <Suspense fallback={<Loading text="Loading areas manager..." />}>
+            <RadarAreasManager />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
@@ -273,8 +334,8 @@ function RadarContent() {
 
 export default function RadarPage() {
   return (
-    <RadarProvider>
+    <div className="container mx-auto py-6">
       <RadarContent />
-    </RadarProvider>
-  );
+    </div>
+  )
 } 
