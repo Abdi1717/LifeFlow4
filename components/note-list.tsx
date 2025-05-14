@@ -20,7 +20,7 @@ import { Note, Tag } from '@/lib/types';
 export function NoteList() {
   const { notes, setCurrentNote, tags } = useNotes();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTag, setSelectedTag] = useState<string>('');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
 
   const filteredNotes = useMemo(() => {
     return notes.filter(note => {
@@ -29,7 +29,7 @@ export function NoteList() {
                            note.content.toLowerCase().includes(searchTerm.toLowerCase());
       
       // Filter by tag
-      const matchesTag = !selectedTag || 
+      const matchesTag = selectedTag === 'all' || 
                         (note.tags && note.tags.some(tagId => tagId === selectedTag));
       
       return matchesSearch && matchesTag;
@@ -38,7 +38,7 @@ export function NoteList() {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedTag('');
+    setSelectedTag('all');
   };
 
   const handleNoteSelect = (note: Note) => {
@@ -82,7 +82,7 @@ export function NoteList() {
                   <SelectValue placeholder="Filter by tag" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Tags</SelectItem>
+                  <SelectItem value="all">All Tags</SelectItem>
                   {tags.map(tag => (
                     <SelectItem key={tag.id} value={tag.id}>
                       <div className="flex items-center gap-2">
@@ -96,13 +96,13 @@ export function NoteList() {
             </div>
           </div>
           
-          {(searchTerm || selectedTag) && (
+          {(searchTerm || selectedTag !== 'all') && (
             <div className="flex justify-between items-center">
               <div className="flex gap-2 items-center">
                 <span className="text-sm text-muted-foreground">
                   Showing {filteredNotes.length} of {notes.length} notes
                 </span>
-                {selectedTag && tags.find(t => t.id === selectedTag) && (
+                {selectedTag !== 'all' && tags.find(t => t.id === selectedTag) && (
                   <Badge variant="outline" className="flex gap-1 items-center">
                     <div 
                       className="w-2 h-2 rounded-full" 
@@ -126,7 +126,7 @@ export function NoteList() {
           {filteredNotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <p className="text-muted-foreground">No notes found</p>
-              {(searchTerm || selectedTag) && (
+              {(searchTerm || selectedTag !== 'all') && (
                 <Button 
                   variant="link" 
                   onClick={clearFilters}
