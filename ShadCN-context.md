@@ -18,4 +18,7 @@ This file tracks all the ShadCN components that have been used in the project.
 - Label
 - Alert (Alert, AlertTitle, AlertDescription)
 - Checkbox
-- Alert Dialog (AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger) 
+- Alert Dialog (AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger)
+- Scroll Area (ScrollArea)
+- Skeleton
+- Switch 
