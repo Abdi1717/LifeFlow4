@@ -1,8 +1,15 @@
 ---
+<<<<<<< HEAD
 description:
 globs:
 alwaysApply: false
+=======
+description: Rules for GitHub and Taskmaster integration in the workflow
+globs: tasks/*.md, tasks/tasks.json, app/**/*
+alwaysApply: true
 ---
+
+>>>>>>> 1328a9a9fe85870642332260aa801a5d338ff3e3
 # GitHub-Taskmaster Integration for Continuous Project Management
 
 - **Automatic GitHub Issue Creation**
@@ -97,3 +104,4 @@ ${task.dependencies.map(dep => `- [ ] Task #${dep}`).join('\n')}`;
   - Reference the GitHub issue in commits using `#issue_number` syntax
 
 This integration ensures that project management stays synchronized between Taskmaster and GitHub, providing visibility to all team members and stakeholders while maintaining the structured task management approach of Taskmaster.
+
