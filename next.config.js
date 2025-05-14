@@ -35,7 +35,6 @@ const nextConfig = {
     esmExternals: 'loose',
     optimizeCss: true, // CSS optimization for improved load time
     optimizeServerReact: true, // React server-side optimization
-    serverActions: true, // Enable server actions for improved data mutations
     turbo: {
       loaders: {
         // Enable SWC optimization for .svg files

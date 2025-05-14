@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
-import { Loading } from '@/components/loading'
+import Loading from '@/components/loading'
 
 // Dynamic imports for context providers and layout
 const TransactionProvider = dynamic(() => import('@/lib/transaction-context').then(mod => mod.TransactionProvider), {

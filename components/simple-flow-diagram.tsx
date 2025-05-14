@@ -6,7 +6,7 @@ import { formatCurrency } from '@/lib/format'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AlertCircle } from 'lucide-react'
-import { getCategoryGroup, getCategoryColor } from '@/lib/sankeyUtils'
+import { getCategoryGroup, getCategoryColor, processSankeyData } from '@/lib/sankeyUtils'
 
 type TimeRange = 'month' | 'quarter' | 'year' | 'all'
 
