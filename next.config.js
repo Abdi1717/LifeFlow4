@@ -3,6 +3,7 @@ const removeImports = require('next-remove-imports')();
 const withBundleAnalyzer = process.env.ANALYZE === 'true' 
   ? require('@next/bundle-analyzer')({ enabled: true })
   : (config) => config;
+const path = require('path');
 
 const nextConfig = {
   reactStrictMode: false, // Disable in development for faster renders
@@ -55,9 +56,6 @@ const nextConfig = {
     // Cache optimization
     incrementalCacheHandlerPath: require.resolve('./lib/cache-handler.js'),
     
-    // Enable module-level code caching where supported
-    moduleSuffixes: ['', '.module', '.browser', '.react', '.client'],
-    
     // Turbopack settings - simplified
     turbo: {
       loaders: {
@@ -94,7 +92,7 @@ const nextConfig = {
       config.cache = {
         type: 'filesystem',
         allowCollectingMemory: true,
-        cacheDirectory: '.next/cache/webpack',
+        cacheDirectory: path.resolve(process.cwd(), '.next/cache/webpack'),
         buildDependencies: {
           config: [__filename],
         },
