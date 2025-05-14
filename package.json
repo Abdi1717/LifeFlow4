@@ -15,7 +15,9 @@
     "clean:deep": "bash scripts/clean-next-cache.sh --deep",
     "clean:light": "bash scripts/clean-next-cache.sh --light",
     "clean:full": "bash scripts/clean-next-cache.sh --full",
-    "dev:clean": "npm run clean && npm run dev:fast"
+    "dev:clean": "npm run clean && npm run dev:fast",
+    "fix:chunks": "node scripts/fix-d3-chunks.js",
+    "dev:fixed": "npm run fix:chunks && npm run dev:fast"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",

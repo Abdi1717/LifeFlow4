@@ -44,13 +44,11 @@ const nextConfig = {
       'lucide-react', 
       '@radix-ui/react-icons', 
       'date-fns',
-      'd3',
       'chart.js',
       'recharts',
       'framer-motion',
       'react-day-picker',
       '@radix-ui/react-*', // Optimize all Radix UI components
-      '@visx/*',
     ],
     
     // Cache optimization
@@ -74,6 +72,9 @@ const nextConfig = {
   webpack: (config, { dev, isServer }) => {
     // Only include required locales from date-fns
     config.resolve.alias['date-fns/locale'] = 'date-fns/locale/en-US';
+    
+    // Increase chunk loading timeout to prevent timeout errors with large chunks
+    config.output.chunkLoadTimeout = 60000; // 60 seconds (default is 120000ms but seems to be an issue)
     
     // Optimize for development speed
     if (dev) {
@@ -112,13 +113,26 @@ const nextConfig = {
       ...config.optimization,
       splitChunks: {
         chunks: 'all',
+        maxInitialRequests: 25, // Increase from default (usually 4) to allow more chunks initially
+        maxAsyncRequests: 30, // Increase from default (usually 5) to allow more async chunks 
+        minSize: 20000, // Slightly higher minimum size to prevent excessive chunking
+        maxSize: 200000, // Cap maximum size to balance between too many small chunks and too few large ones
         cacheGroups: {
-          // Group all heavy visualization libraries together
+          // Handle d3 libraries separately to prevent loading timeout
+          d3: {
+            test: /[\\/]node_modules[\\/]d3(?:-.*)?[\\/]/,
+            name: 'd3-libs',
+            priority: 30,
+            enforce: true,
+            reuseExistingChunk: true,
+          },
+          // Group all visualization libraries together but split d3 separately
           visualizations: {
-            test: /[\\/]node_modules[\\/](d3|three|recharts|chart\.js|react-force-graph)[\\/]/,
+            test: /[\\/]node_modules[\\/](three|recharts|chart\.js|react-force-graph)[\\/]/,
             name: 'visualizations',
             priority: 20,
             enforce: true,
+            reuseExistingChunk: true,
           },
           // Group Radix UI components together
           radix: {
@@ -126,6 +140,7 @@ const nextConfig = {
             name: 'radix-ui',
             priority: 19,
             enforce: true,
+            reuseExistingChunk: true,
           },
           // Group other common libraries
           commons: {
@@ -133,6 +148,7 @@ const nextConfig = {
             name: 'commons',
             priority: 18,
             enforce: true,
+            reuseExistingChunk: true,
           },
           // Default vendor chunk
           defaultVendors: {
