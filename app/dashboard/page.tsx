@@ -1,20 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTransactions, Transaction } from "@/lib/transaction-context"
 import { BarChart3, Wallet, Receipt, CreditCard } from "lucide-react"
-import { lazyImport } from "@/lib/utils"
+import { lazyImport, prefetchDashboardModules } from "@/lib/utils"
 import { Suspense } from "react"
 import Loading from "@/components/loading"
 
-// Lazy load heavy components
+// Lazy load heavy components with prefetching
 const SpendingDashboard = lazyImport(() => import('@/components/spending-dashboard').then(mod => ({ default: mod.SpendingDashboard })), {
   displayName: 'SpendingDashboard',
   ssr: false,
-  loading: <Loading text="Loading spending dashboard..." />
+  loading: <Loading text="Loading spending dashboard..." />,
+  prefetch: true
 })
 
 const CSVFileUploader = lazyImport(() => import('@/components/csv-file-uploader').then(mod => ({ default: mod.CSVFileUploader })), {
@@ -25,17 +26,24 @@ const CSVFileUploader = lazyImport(() => import('@/components/csv-file-uploader'
 const TransactionList = lazyImport(() => import('@/components/transaction-list').then(mod => ({ default: mod.TransactionList })), {
   displayName: 'TransactionList',
   ssr: false,
-  loading: <Loading text="Loading transactions..." />
+  loading: <Loading text="Loading transactions..." />,
+  prefetch: true
 })
 
 const BudgetDashboard = lazyImport(() => import('@/components/budget-dashboard').then(mod => ({ default: mod.BudgetDashboard })), {
   displayName: 'BudgetDashboard',
   ssr: false,
-  loading: <Loading text="Loading budget dashboard..." />
+  loading: <Loading text="Loading budget dashboard..." />,
+  prefetch: true
 })
 
 function FinanceDashboardContent() {
   const { addTransactions, categories } = useTransactions()
+  
+  // Prefetch other modules when component is mounted
+  useEffect(() => {
+    prefetchDashboardModules()
+  }, [])
   
   const handleFileLoad = (data: any[]) => {
     // Map CSV data to Transaction format
@@ -158,9 +166,7 @@ function FinanceDashboardContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <Suspense fallback={<Loading text="Loading spending dashboard..." />}>
-                <SpendingDashboard />
-              </Suspense>
+              <SpendingDashboard />
             </CardContent>
           </Card>
         </TabsContent>
@@ -176,9 +182,7 @@ function FinanceDashboardContent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <Suspense fallback={<Loading text="Loading file uploader..." />}>
-                    <CSVFileUploader onFileLoad={handleFileLoad} />
-                  </Suspense>
+                  <CSVFileUploader onFileLoad={handleFileLoad} />
                 </CardContent>
               </Card>
             </div>
@@ -194,9 +198,7 @@ function FinanceDashboardContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <Suspense fallback={<Loading text="Loading transactions..." />}>
-                    <TransactionList />
-                  </Suspense>
+                  <TransactionList />
                 </CardContent>
               </Card>
             </div>
@@ -204,74 +206,39 @@ function FinanceDashboardContent() {
         </TabsContent>
         
         <TabsContent value="budget" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-1">
-              <Card className="border-slate-200 dark:border-slate-700 shadow-md h-full">
-                <CardHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Wallet className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    Budget Tracker
-                  </CardTitle>
-                  <CardDescription>
-                    Set and manage your budget goals
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <Suspense fallback={<Loading text="Loading budget dashboard..." />}>
-                    <BudgetDashboard />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="md:col-span-1">
-              <Card className="border-slate-200 dark:border-slate-700 shadow-md h-full">
-                <CardHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <BarChart3 className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                    Budget Overview
-                  </CardTitle>
-                  <CardDescription>
-                    Monthly spending vs budget overview
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-4">
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Your budgets help you keep track of spending across different categories. Create 
-                      budgets for major expense categories to stay on top of your financial goals.
-                    </p>
-                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                      <h4 className="font-medium mb-2 text-slate-900 dark:text-slate-100">Tips for Better Budgeting:</h4>
-                      <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
-                        <li>Start with major categories like Housing, Food, and Transportation</li>
-                        <li>Review and adjust your budgets regularly</li>
-                        <li>Use transaction categorization to ensure accurate budget tracking</li>
-                        <li>Set realistic goals based on your historical spending</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          <Card className="border-slate-200 dark:border-slate-700 shadow-md">
+            <CardHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Wallet className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                Budget Management
+              </CardTitle>
+              <CardDescription>
+                Create and manage your budget categories
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-6">
+              <BudgetDashboard />
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="payments" className="space-y-6">
           <Card className="border-slate-200 dark:border-slate-700 shadow-md">
             <CardHeader className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CreditCard className="h-4 w-4 text-slate-500 dark:text-slate-400" />
-                Recurring Payments
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <CreditCard className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+                Payments & Transfers
               </CardTitle>
               <CardDescription>
-                Monitor your recurring payments and upcoming bills
+                Schedule payments and transfer funds between accounts
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-8">
-              <div className="flex flex-col items-center justify-center h-40 p-6 bg-slate-50 dark:bg-slate-800 rounded-lg border border-dashed border-slate-300 dark:border-slate-600">
-                <CreditCard className="h-10 w-10 text-slate-400 dark:text-slate-500 mb-4" />
-                <p className="text-muted-foreground text-center">Payment tracking functionality coming soon</p>
-                <p className="text-xs text-muted-foreground mt-2">Track your subscriptions and recurring bills automatically</p>
+            <CardContent className="p-6">
+              <div className="text-center py-6">
+                <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300">Coming Soon</h3>
+                <p className="text-slate-500 dark:text-slate-400 mt-2">
+                  Payment and transfer features are currently in development.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -283,8 +250,8 @@ function FinanceDashboardContent() {
 
 export default function Dashboard() {
   return (
-    <div className="container mx-auto py-6">
+    <div className="px-4 py-6 md:px-6 md:py-8 lg:py-10 max-w-7xl mx-auto">
       <FinanceDashboardContent />
     </div>
-  )
+  );
 } 
