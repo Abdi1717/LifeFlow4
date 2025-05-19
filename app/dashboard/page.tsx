@@ -1,49 +1,22 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTransactions, Transaction } from "@/lib/transaction-context"
 import { BarChart3, Wallet, Receipt, CreditCard } from "lucide-react"
-import { lazyImport, prefetchDashboardModules } from "@/lib/utils"
-import { Suspense } from "react"
 import Loading from "@/components/loading"
+import { Suspense } from "react"
 
-// Lazy load heavy components with prefetching
-const SpendingDashboard = lazyImport(() => import('@/components/spending-dashboard').then(mod => ({ default: mod.SpendingDashboard })), {
-  displayName: 'SpendingDashboard',
-  ssr: false,
-  loading: <Loading text="Loading spending dashboard..." />,
-  prefetch: true
-})
-
-const CSVFileUploader = lazyImport(() => import('@/components/csv-file-uploader').then(mod => ({ default: mod.CSVFileUploader })), {
-  displayName: 'CSVFileUploader',
-  ssr: false,
-})
-
-const TransactionList = lazyImport(() => import('@/components/transaction-list').then(mod => ({ default: mod.TransactionList })), {
-  displayName: 'TransactionList',
-  ssr: false,
-  loading: <Loading text="Loading transactions..." />,
-  prefetch: true
-})
-
-const BudgetDashboard = lazyImport(() => import('@/components/budget-dashboard').then(mod => ({ default: mod.BudgetDashboard })), {
-  displayName: 'BudgetDashboard',
-  ssr: false,
-  loading: <Loading text="Loading budget dashboard..." />,
-  prefetch: true
-})
+// Import components directly without lazy loading
+import SpendingDashboard from "@/components/spending-dashboard"
+import CSVFileUploader from "@/components/csv-file-uploader"
+import TransactionList from "@/components/transaction-list"
+import BudgetDashboard from "@/components/budget-dashboard"
 
 function FinanceDashboardContent() {
   const { addTransactions, categories } = useTransactions()
-  
-  // Prefetch other modules when component is mounted
-  useEffect(() => {
-    prefetchDashboardModules()
-  }, [])
   
   const handleFileLoad = (data: any[]) => {
     // Map CSV data to Transaction format
@@ -166,7 +139,9 @@ function FinanceDashboardContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <SpendingDashboard />
+              <Suspense fallback={<Loading text="Loading spending dashboard..." />}>
+                <SpendingDashboard />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
@@ -182,7 +157,9 @@ function FinanceDashboardContent() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <CSVFileUploader onFileLoad={handleFileLoad} />
+                  <Suspense fallback={<Loading size="sm" text="Loading uploader..." />}>
+                    <CSVFileUploader onFileLoad={handleFileLoad} />
+                  </Suspense>
                 </CardContent>
               </Card>
             </div>
@@ -198,7 +175,9 @@ function FinanceDashboardContent() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <TransactionList />
+                  <Suspense fallback={<Loading text="Loading transactions..." />}>
+                    <TransactionList />
+                  </Suspense>
                 </CardContent>
               </Card>
             </div>
@@ -217,7 +196,9 @@ function FinanceDashboardContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <BudgetDashboard />
+              <Suspense fallback={<Loading text="Loading budget dashboard..." />}>
+                <BudgetDashboard />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
