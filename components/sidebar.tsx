@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BarChart3, FileText, LineChart, Train, CheckSquare } from "lucide-react"
+import { BarChart3, FileText, LineChart, Train, CheckSquare, Users } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,11 @@ export function Sidebar({ className }: SidebarProps) {
       href: "/dashboard/radar",
       icon: LineChart,
       title: "Personal Radar",
+    },
+    {
+      href: "/dashboard/network",
+      icon: Users,
+      title: "Network",
     },
     {
       href: "/dashboard/commute",
