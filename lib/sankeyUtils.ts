@@ -9,6 +9,11 @@ export interface CashflowItem {
   color?: string;
 }
 
+export interface SankeyLegendItem {
+  name: string;
+  color: string;
+}
+
 export interface SankeyData {
   nodes: Array<{
     name: string;
@@ -19,7 +24,14 @@ export interface SankeyData {
     source: number;
     target: number;
     value: number;
+    percentage?: number;
+    dollarAmount: number;
   }>;
+  legend: SankeyLegendItem[];
+  inflowEqualsOutflow: boolean;
+  inflow: number;
+  outflow: number;
+  warning?: string;
 }
 
 // Custom colors for different node types
@@ -227,17 +239,19 @@ export const getCategoryColor = (name: string): string => {
 };
 
 // Process data for Sankey diagram
-export const processSankeyData = (incomes: CashflowItem[], expenses: CashflowItem[]): SankeyData => {
+export const processSankeyData = (
+  incomes: CashflowItem[],
+  expenses: CashflowItem[],
+  options?: { maxIncomeCats?: number; maxExpenseCats?: number; includeCategories?: string[] }
+): SankeyData => {
   try {
-    // Early return if there's no data
     if (!incomes.length && !expenses.length) {
-      return { nodes: [], links: [] };
+      return { nodes: [], links: [], legend: [], inflowEqualsOutflow: true, inflow: 0, outflow: 0 };
     }
 
     // Group incomes by category
     const incomeByCategory = new Map<string, number>();
     let totalIncome = 0;
-
     incomes.forEach(income => {
       const category = getCategoryGroup(income.category || 'Other', true);
       const current = incomeByCategory.get(category) || 0;
@@ -248,7 +262,6 @@ export const processSankeyData = (incomes: CashflowItem[], expenses: CashflowIte
     // Group expenses by category
     const expenseByCategory = new Map<string, number>();
     let totalExpense = 0;
-
     expenses.forEach(expense => {
       const category = getCategoryGroup(expense.category || 'Other', false);
       const current = expenseByCategory.get(category) || 0;
@@ -256,74 +269,102 @@ export const processSankeyData = (incomes: CashflowItem[], expenses: CashflowIte
       totalExpense += Math.abs(expense.amount);
     });
 
+    // Sort and limit categories
+    const maxIncomeCats = options?.maxIncomeCats ?? 5;
+    const maxExpenseCats = options?.maxExpenseCats ?? 5;
+    const sortedIncome = Array.from(incomeByCategory.entries()).sort((a, b) => b[1] - a[1]);
+    const sortedExpense = Array.from(expenseByCategory.entries()).sort((a, b) => b[1] - a[1]);
+    const topIncome = sortedIncome.slice(0, maxIncomeCats);
+    const otherIncomeSum = sortedIncome.slice(maxIncomeCats).reduce((sum, [, v]) => sum + v, 0);
+    const topExpense = sortedExpense.slice(0, maxExpenseCats);
+    const otherExpenseSum = sortedExpense.slice(maxExpenseCats).reduce((sum, [, v]) => sum + v, 0);
+
+    // Optionally filter categories
+    const includeCategories = options?.includeCategories;
+
     // Create nodes
     const nodes: SankeyData['nodes'] = [];
+    const legend: SankeyLegendItem[] = [];
     const incomeNodes: string[] = [];
     const expenseNodes: string[] = [];
 
     // Add income nodes
-    Array.from(incomeByCategory.entries()).forEach(([category, amount]) => {
-      if (amount > 0) {
+    topIncome.forEach(([category, amount]) => {
+      if (amount > 0 && (!includeCategories || includeCategories.includes(category))) {
         const percentage = (amount / totalIncome) * 100;
-        nodes.push({
-          name: category,
-          color: getCategoryColor(category),
-          percentage
-        });
+        const color = getCategoryColor(category);
+        nodes.push({ name: category, color, percentage });
+        legend.push({ name: category, color });
         incomeNodes.push(category);
       }
     });
+    if (otherIncomeSum > 0) {
+      nodes.push({ name: 'Other Income', color: COLORS.income, percentage: (otherIncomeSum / totalIncome) * 100 });
+      legend.push({ name: 'Other Income', color: COLORS.income });
+      incomeNodes.push('Other Income');
+      incomeByCategory.set('Other Income', otherIncomeSum);
+    }
 
     // Add budget node
     const budgetIndex = nodes.length;
-    nodes.push({
-      name: 'Budget',
-      color: COLORS.budget
-    });
+    nodes.push({ name: 'Budget', color: COLORS.budget });
+    legend.push({ name: 'Budget', color: COLORS.budget });
 
     // Add expense nodes
-    Array.from(expenseByCategory.entries()).forEach(([category, amount]) => {
-      if (amount > 0) {
+    topExpense.forEach(([category, amount]) => {
+      if (amount > 0 && (!includeCategories || includeCategories.includes(category))) {
         const percentage = (amount / totalExpense) * 100;
-        nodes.push({
-          name: category,
-          color: getCategoryColor(category),
-          percentage
-        });
+        const color = getCategoryColor(category);
+        nodes.push({ name: category, color, percentage });
+        legend.push({ name: category, color });
         expenseNodes.push(category);
       }
     });
+    if (otherExpenseSum > 0) {
+      nodes.push({ name: 'Other Expenses', color: COLORS.otherExpenses, percentage: (otherExpenseSum / totalExpense) * 100 });
+      legend.push({ name: 'Other Expenses', color: COLORS.otherExpenses });
+      expenseNodes.push('Other Expenses');
+      expenseByCategory.set('Other Expenses', otherExpenseSum);
+    }
 
     // Create links
     const links: SankeyData['links'] = [];
-
     // Links from income to budget
     incomeNodes.forEach((category, i) => {
       const amount = incomeByCategory.get(category) || 0;
       if (amount > 0) {
+        const percent = totalIncome > 0 ? (amount / totalIncome) * 100 : 0;
         links.push({
           source: i,
           target: budgetIndex,
-          value: amount
+          value: amount,
+          percentage: percent,
+          dollarAmount: amount
         });
       }
     });
-
     // Links from budget to expense categories
     expenseNodes.forEach((category, i) => {
       const amount = expenseByCategory.get(category) || 0;
       if (amount > 0) {
+        const percent = totalExpense > 0 ? (amount / totalExpense) * 100 : 0;
         links.push({
           source: budgetIndex,
           target: budgetIndex + 1 + i, // offset by budget node
-          value: amount
+          value: amount,
+          percentage: percent,
+          dollarAmount: amount
         });
       }
     });
 
-    return { nodes, links };
+    // Inflow/outflow check
+    const inflowEqualsOutflow = Math.abs(totalIncome - totalExpense) < 0.01;
+    const warning = !inflowEqualsOutflow ? `Total inflow ($${totalIncome.toLocaleString()}) does not match total outflow ($${totalExpense.toLocaleString()})` : undefined;
+
+    return { nodes, links, legend, inflowEqualsOutflow, inflow: totalIncome, outflow: totalExpense, warning };
   } catch (error) {
     console.error('Error processing Sankey data:', error);
-    return { nodes: [], links: [] };
+    return { nodes: [], links: [], legend: [], inflowEqualsOutflow: true, inflow: 0, outflow: 0 };
   }
 };
